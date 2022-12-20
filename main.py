@@ -61,4 +61,4 @@ if __name__ == '__main__':
         generationCounter += 1
         offspring = toolbox.select(population, len(population))
         offspring = list(map(toolbox.clone, offspring))
-        pass
+
