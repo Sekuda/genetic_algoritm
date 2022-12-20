@@ -1,8 +1,5 @@
+from deap import creator
+from deap import base
 
-def print_hi(name):
-    print(f'Hi, {name}')
-
-
-if __name__ == '__main__':
-    print_hi('PyCharm')
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 
