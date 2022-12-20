@@ -1,8 +1,4 @@
+from deap import creator
 
-def print_hi(name):
-    print(f'Hi, {name}')
-
-
-if __name__ == '__main__':
-    print_hi('PyCharm')
+creator.create("Developer", 'Employee', position="Developer", programmingLanguages = set)
 
