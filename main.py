@@ -57,5 +57,8 @@ if __name__ == '__main__':
     maxFitnessValues = []
     meanFitnessValues = []
 
-
-
+    while generationCounter < MAX_GENERATIONS and max(fitnessValues) < ONE_MAX_LENGTH:
+        generationCounter += 1
+        offspring = toolbox.select(population, len(population))
+        offspring = list(map(toolbox.clone, offspring))
+        pass
