@@ -23,3 +23,39 @@ toolbox.register("zeroOrOne", random.randint, 0, 1)
 creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 
 creator.create("Individual", list, fitness=creator.FitnessMax)
+
+#создание популяции: функция initRepeat():
+# 1. тип контейнера
+# 2. ф-я генерирущая объекты, которые помещаются в контейнер
+# 3. кол-во объектов, которые помещаются в контейнер
+
+toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.zeroOrOne, ONE_MAX_LENGTH)
+toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individualCreator)
+
+
+def oneMaxFitness(individual):
+    return sum(individual), # Вернуть кортеж
+
+
+toolbox.register("evaluate", oneMaxFitness)
+
+toolbox.register("select", tools.selTournament, tournsize=3)
+toolbox.register("mate", tools.cxOnePoint)
+toolbox.register("mutate", tools.mutFlipBit, indpd=1.0/ONE_MAX_LENGTH)
+
+
+if __name__ == '__main__':
+    population = toolbox.populationCreator(n=POPULATION_SIZE)
+    generationCounter = 0
+    fitnessValues = list(map(toolbox.evaluate, population))
+
+    for individual, fitnessValue in zip(population, fitnessValues):
+        individual.fitness.value = fitnessValue
+
+    fitnessValues = [individual.fitness.value[0] for individual in population]
+
+    maxFitnessValues = []
+    meanFitnessValues = []
+
+
+
