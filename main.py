@@ -23,18 +23,10 @@ RANDOM_SEED = 41
 # Для этого мы задаем какое-нибудь фиксированное начальное значение генератора случайных чисел
 random.seed(RANDOM_SEED)
 
-
-def target(x=None):
-    if x is None:
-        return 1.0,
-    else:
-        return max(x)
-
-
 toolbox = base.Toolbox()
 toolbox.register("zeroOrOne", random.randint, 0, 1)
 
-creator.create("FitnessMax", base.Fitness, weights=target())
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 
 creator.create("Individual", list, fitness=creator.FitnessMax)
 
@@ -49,6 +41,7 @@ toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individual
 
 def oneMaxFitness(individual):
     return sum(individual),  # return a tuple # Вернуть кортеж
+
 
 toolbox.register("evaluate", oneMaxFitness)
 # toolbox.register("select", tools.selRoulette)
@@ -103,14 +96,14 @@ def main():
 
         fitnessValues = [individual.fitness.values[0] for individual in population]
 
-        targetFitness = target(fitnessValues)
+        targetFitness = max(fitnessValues)
         meanFitness = sum(fitnessValues) / len(population)
         maxFitnessValues.append(targetFitness)
         meanFitnessValues.append(meanFitness)
         print("- Поколение {}: Целевая приспособ. = {}, Средняя приспособ. = {}".format(generationCounter, targetFitness,
                                                                                      meanFitness))
 
-        best_index = fitnessValues.index(target(fitnessValues))
+        best_index = fitnessValues.index(max(fitnessValues))
         print("Лучший индивидуум = ", *population[best_index], "\n")
 
     sns.set_style("whitegrid")
@@ -154,6 +147,7 @@ def short_main():
     plt.ylabel('Целевая/средняя приспособленность')
     plt.title('Зависимость целевой и средней приспособленности от поколения')
     plt.show()
+
 
 if __name__ == '__main__':
     # main()
