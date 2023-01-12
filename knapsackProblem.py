@@ -114,8 +114,8 @@ def knapsackProblem():
     weight = sum([i[1] for i in hof.items[0]])
     print(f'Лучший индивидуум приоритет: {value} вес: {weight}] ')
     tmp = hof.items[0]
-    freshIndividuals = [ind for ind in tmp if not ind == empty]
-    print(freshIndividuals)
+    freshIndividual = [ind for ind in tmp if not ind == empty]
+    print(freshIndividual)
 
 
     sns.set_style("whitegrid")
