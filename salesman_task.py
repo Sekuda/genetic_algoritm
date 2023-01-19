@@ -18,8 +18,8 @@ class TravelingSalesmanProblem:
     def getTotalDistance(self, indices):
         total_distance = 0
         for i in range(len(indices)):
-            k = i+1
-            if k > len(indices)-1:
+            k = i + 1
+            if k > len(indices) - 1:
                 k = 0
             total_distance += self.matrix[i][k]
         return total_distance
@@ -28,10 +28,10 @@ class TravelingSalesmanProblem:
 
         # plot the dots representing the cities:
         # plt.scatter(*zip(*self.locations), marker='.', color='red')
-        plt.scatter([(x[2]) for x in self.locations], [(x[1]) for x in self.locations], marker='.', color='red')
+        plt.scatter(*zip(*[(x[2], x[1]) for x in self.locations]), marker='.', color='red')
 
         # create a list of the corresponding city locations:
-        locs = [(self.locations[i][2],self.locations[i][1]) for i in indices]
+        locs = [(self.locations[i][2], self.locations[i][1]) for i in indices]
         locs.append(locs[0])
 
         # plot a line between each pair of consequtive cities:
@@ -46,18 +46,18 @@ class TravelingSalesmanProblem:
     def __create_data(self):
 
         self.locations = (("работа", 55.777780, 37.504985, 0),
-          ("дом", 55.738344, 37.432760, 1),
-          ("Глеб", 55.767825, 37.557577, 2),
-          ("Николета", 55.766669, 37.735562, 3),
-          ("Авиапарк", 55.789599, 37.531579, 4),
-          ("ТРЦ_Кунцево", 55.738613, 37.410496, 5),
-          ("ТРЦ_Хорошо", 55.777067, 37.523639, 6),
-          ("Леруа_Строгино", 55.811217, 37.386328, 7),
-          ("Алена_Работа", 55.795922, 37.297073, 8),
-          ("мама", 57.689495, 39.764523, 9),
-          ("папа", 57.613051, 39.941290, 10),
-          ("Дача", 57.486358, 39.884197, 11)
-          )
+                          ("дом", 55.738344, 37.432760, 1),
+                          ("Глеб", 55.767825, 37.557577, 2),
+                          ("Николета", 55.766669, 37.735562, 3),
+                          ("Авиапарк", 55.789599, 37.531579, 4),
+                          ("ТРЦ_Кунцево", 55.738613, 37.410496, 5),
+                          ("ТРЦ_Хорошо", 55.777067, 37.523639, 6),
+                          ("Леруа_Строгино", 55.811217, 37.386328, 7),
+                          ("Алена_Работа", 55.795922, 37.297073, 8),
+                          ("мама", 57.689495, 39.764523, 9),
+                          ("папа", 57.613051, 39.941290, 10),
+                          ("Дача", 57.486358, 39.884197, 11)
+                          )
 
         for i in range(len(self.locations)):
             pointA = self.locations[i]
