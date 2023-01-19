@@ -13,7 +13,7 @@ class TravelingSalesmanProblem:
         self.__create_data()
 
     def __len__(self):
-        return len(self.coords)
+        return len(self.locations)
 
     def getTotalDistance(self, indices):
         total_distance = 0
