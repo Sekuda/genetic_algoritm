@@ -1,6 +1,7 @@
 import geopy.distance
 import matplotlib.pyplot as plt
-
+from deap import tools
+from deap import algorithms
 
 class TravelingSalesmanProblem:
     def __init__(self):
@@ -19,10 +20,10 @@ class TravelingSalesmanProblem:
         total_distance = 0
         for i in range(len(indices)):
             k = i + 1
-            if k > len(indices) - 1:
+            if k > len(indices)-1:
                 k = 0
-            total_distance += self.matrix[i][k]
-        return total_distance
+            total_distance += self.matrix[indices[i]][indices[k]]
+        return total_distance,
 
     def plotData(self, indices):
 
@@ -56,7 +57,12 @@ class TravelingSalesmanProblem:
                           ("Алена_Работа", 55.795922, 37.297073, 8),
                           ("мама", 57.689495, 39.764523, 9),
                           ("папа", 57.613051, 39.941290, 10),
-                          ("Дача", 57.486358, 39.884197, 11)
+                          ("дача", 57.486358, 39.884197, 11),
+                          ("г.Владимир", 56.123534, 40.392854, 12),
+                          ("Иваново", 56.997419, 40.974276, 13),
+                          ("Кострома", 57.780252, 40.947147, 14),
+                          ("Тверь", 56.852044, 35.910716, 15),
+                          ("Переславль", 56.740552, 38.850907, 16)
                           )
 
         for i in range(len(self.locations)):
@@ -70,12 +76,68 @@ class TravelingSalesmanProblem:
             self.matrix.append(dy)
 
 
+def eaSimpleWithElitism(population, toolbox, cxpb, mutpb, ngen, stats=None,
+             halloffame=None, verbose=__debug__):
+
+    logbook = tools.Logbook()
+    logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
+
+    # Evaluate the individuals with an invalid fitness
+    invalid_ind = [ind for ind in population if not ind.fitness.valid]
+    fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+    for ind, fit in zip(invalid_ind, fitnesses):
+        ind.fitness.values = fit
+
+    if halloffame is None:
+        raise ValueError("halloffame parameter must not be empty!")
+
+    halloffame.update(population)
+    hof_size = len(halloffame.items) if halloffame.items else 0
+
+    record = stats.compile(population) if stats else {}
+    logbook.record(gen=0, nevals=len(invalid_ind), **record)
+    if verbose:
+        print(logbook.stream)
+
+    # Begin the generational process
+    for gen in range(1, ngen + 1):
+        # Select the next generation individuals
+        offspring = toolbox.select(population, len(population) - hof_size)
+
+        # Vary the pool of individuals
+        offspring = algorithms.varAnd(offspring, toolbox, cxpb, mutpb)
+
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        fitnesses = toolbox.map(toolbox.evaluate, invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+
+        # add the best back to population:
+        offspring.extend(halloffame.items)
+
+        # Update the hall of fame with the generated individuals
+        halloffame.update(offspring)
+
+        # Replace the current population by the offspring
+        population[:] = offspring
+
+        # Append the current generation statistics to the logbook
+        record = stats.compile(population) if stats else {}
+        logbook.record(gen=gen, nevals=len(invalid_ind), **record)
+        if verbose:
+            print(logbook.stream)
+
+    return population, logbook
+
+
+
 # testing the class:
 def main():
     # create a problem instance:
     tsp = TravelingSalesmanProblem()
 
-    optimalSolution = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    optimalSolution = [8, 1, 2, 3, 4, 5, 6, 7, 0, 9, 10, 11, 12, 13, 14, 15, 16]
 
     print("Optimal solution = ", optimalSolution)
     print("Optimal distance = ", tsp.getTotalDistance(optimalSolution))
