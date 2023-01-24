@@ -1,32 +1,32 @@
 import array
 
+import salesman_task
+import elitism
 from deap import base
 from deap import creator
 from deap import tools
-from deap import algorithms
 import random
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as numpy
-import elitism as elitism
-
-import salesman_task
 
 P_CROSSOVER = 0.9
-P_MUTATION = 0.1
-MAX_GENERATIONS = 500
+P_MUTATION = 0.2
+MAX_GENERATIONS = 300
 POPULATION_SIZE = 200
-RANDOM_SEED = 42
-random.seed(RANDOM_SEED)
+RANDOM_SEED = 41
+random.seed()
+
 
 def main():
     tsp = salesman_task.TravelingSalesmanProblem()
+
+    creator.create("FitnessMin", base.Fitness, weights=(-1.0, -1.0))
+    creator.create("Individual", array.array, fitness=creator.FitnessMin, typecode='i')
+
     toolbox = base.Toolbox()
-
-    creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-    creator.create("Individual", array.array, fitness=creator.FitnessMin, typecode='i')  # add param typecode='i'
-
-    toolbox.register("randomOrder", random.sample, range(len(tsp)), len(tsp))  # оператор randomOrder
+    toolbox.register("randomOrder", random.sample, range(len(tsp) + tsp.carCnt - 1),
+                     len(tsp) + tsp.carCnt - 1)  # оператор randomOrder
     # применяет функцию random.sample() к диапазону, соответствующему задаче коммивояжера
     # (длины, равной количеству городов n). В результате генерируется
     # случайный список индексов от 0 до n – 1.
@@ -34,12 +34,12 @@ def main():
     toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individualCreator)
 
     def tpsDiatance(individual):
-        return tsp.getTotalDistance(individual),
+        return tsp.getMaxDistance(individual), tsp.getRouteDistance(individual)
 
     toolbox.register("evaluate", tpsDiatance)
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", tools.cxOrdered)
-    toolbox.register("mutate", tools.mutShuffleIndexes, indpb=1.0/len(tsp))
+    toolbox.register("mutate", tools.mutShuffleIndexes, indpb=1.0 / len(tsp))
 
     hof = tools.HallOfFame(30)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -48,19 +48,21 @@ def main():
     population = toolbox.populationCreator(n=POPULATION_SIZE)
 
     population, logbook = elitism.eaSimpleWithElitism(population, toolbox,
-                                              cxpb=P_CROSSOVER,
-                                              mutpb=P_MUTATION,
-                                              ngen=MAX_GENERATIONS,
-                                              stats=stats,
-                                              halloffame=hof,
-                                              verbose=True)
+                                                      cxpb=P_CROSSOVER,
+                                                      mutpb=P_MUTATION,
+                                                      ngen=MAX_GENERATIONS,
+                                                      stats=stats,
+                                                      halloffame=hof,
+                                                      verbose=True)
 
     minFitnessValues, meanFitnessValues = logbook.select("min", "avg")
     # Nevals представляет количество раз, чтобы вызвать функцию оценки в итерации
 
-    print("Лучший индивидуум = ", hof.items[0])
-    print("Optimal distance = ", tsp.getTotalDistance(hof.items[0]))
-
+    print("Лучший индивидуум = ", tsp.getRouteDistance(hof.items[0]))
+    print("Optimal distance = ", tsp.getMaxDistance(hof.items[0]))
+    print(f'Dist:  {tsp.getTotalDistance(tsp.getRoutes(hof.items[0])[0])}, '
+          f'{tsp.getTotalDistance(tsp.getRoutes(hof.items[0])[1])},'
+          f' {tsp.getTotalDistance(tsp.getRoutes(hof.items[0])[2])}')
     fig, axs = plt.subplots(2)
 
     sns.set_style("whitegrid")
@@ -72,7 +74,7 @@ def main():
     # plt.show()
 
     # plot the solution:
-    axs[1] = tsp.plotData(hof.items[0])
+    axs[1] = tsp.plotCarsData(hof.items[0])
     plt.show()
 
 
