@@ -12,10 +12,10 @@ import numpy as numpy
 
 P_CROSSOVER = 0.9
 P_MUTATION = 0.2
-MAX_GENERATIONS = 300
-POPULATION_SIZE = 200
+MAX_GENERATIONS = 100
+POPULATION_SIZE = 300
 RANDOM_SEED = 41
-random.seed()
+random.seed(RANDOM_SEED)
 
 
 def main():
@@ -45,6 +45,7 @@ def main():
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("min", numpy.min)
     stats.register("avg", numpy.mean)
+
     population = toolbox.populationCreator(n=POPULATION_SIZE)
 
     population, logbook = elitism.eaSimpleWithElitism(population, toolbox,
@@ -58,11 +59,9 @@ def main():
     minFitnessValues, meanFitnessValues = logbook.select("min", "avg")
     # Nevals представляет количество раз, чтобы вызвать функцию оценки в итерации
 
-    print("Лучший индивидуум = ", tsp.getRouteDistance(hof.items[0]))
-    print("Optimal distance = ", tsp.getMaxDistance(hof.items[0]))
-    print(f'Dist:  {tsp.getTotalDistance(tsp.getRoutes(hof.items[0])[0])}, '
-          f'{tsp.getTotalDistance(tsp.getRoutes(hof.items[0])[1])},'
-          f' {tsp.getTotalDistance(tsp.getRoutes(hof.items[0])[2])}')
+    print("Total distance = ", tsp.getRouteDistance(hof.items[0]))
+    print("Max distance = ", tsp.getMaxDistance(hof.items[0]))
+    print(f'Routes:  {[tsp.getTotalDistance(x) for x in tsp.getRoutes(hof.items[0])]}')
     fig, axs = plt.subplots(2)
 
     sns.set_style("whitegrid")

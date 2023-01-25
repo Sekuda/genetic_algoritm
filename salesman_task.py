@@ -2,7 +2,8 @@ import geopy.distance
 import matplotlib.pyplot as plt
 from deap import tools
 from deap import algorithms
-
+import numpy as np
+import random
 
 class TravelingSalesmanProblem:
     def __init__(self):
@@ -133,7 +134,8 @@ class TravelingSalesmanProblem:
         # plt.scatter(*zip(*self.locations), marker='.', color='red')
         plt.scatter(*zip(*[(x[2], x[1]) for x in self.locations]), marker='.', color='red')
 
-        colors = ['blue', 'red', 'green', 'black']
+        color = ["#" + ''.join([random.choice('0123456789ABCDEF') for j in range(6)])
+                 for i in range(self.carCnt)]
         i = 0
         for distance in carsDistances:
             # create a list of the corresponding city locations:
@@ -141,7 +143,7 @@ class TravelingSalesmanProblem:
             locs.append(locs[0])
 
             # plot a line between each pair of consequtive cities:
-            plt.plot(*zip(*locs), linestyle='-', color=colors[i])
+            plt.plot(*zip(*locs), linestyle='-', color=color[i])
             i += 1
 
         # Loop for annotation of all points
