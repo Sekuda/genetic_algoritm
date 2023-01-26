@@ -14,8 +14,8 @@ class TravelingSalesmanProblem:
         self.matrix = list()
         # initialize the data:
         self.__create_data()
-        self.garageIndex = 1
-        self.carCnt = 3
+        self.garageIndex = 10
+        self.carCnt = 2
 
     def __len__(self):
         return len(self.locations)
