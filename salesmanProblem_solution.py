@@ -63,7 +63,7 @@ def main():
 
     fig, axs = plt.subplots(2)
 
-    sns.set_style("whitegrid")
+    #sns.set_style("whitegrid")
     axs[0].plot(minFitnessValues, color='red')
     axs[0].plot(meanFitnessValues, color='green')
     axs[0].set_xlabel('Поколение')
