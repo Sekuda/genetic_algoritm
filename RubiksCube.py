@@ -1,6 +1,6 @@
 import random
 import tkinter
-from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE
+from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE , BOTH, Y, X
 
 
 class Cons:
@@ -15,13 +15,19 @@ class Board(Frame):
     def __init__(self):
         super().__init__()
         self.master.title('Cube')
-        self.cube = RubiksCube()
-        x_Frame = Frame(background="green", width=100, height=100)
-        y_Frame = Frame(background="green", width=100, height=100)
-        z_Frame = Frame(background="green", width=100, height=100)
-        x_Frame.pack(anchor=NE,side=RIGHT)
-        y_Frame.pack(anchor=NE,side=RIGHT)
-        z_Frame.pack(anchor=NE,side=RIGHT)
+
+        controls_frame = Frame(background='pink', width=100)
+        controls_frame.pack(fill=Y,anchor=NW)
+        graphic_frame = Frame(bg='red', width=100)
+        graphic_frame.pack(fill=BOTH,anchor=NE)
+        self.cube = RubiksCube(graphic_frame)
+
+        x_Frame = Frame(controls_frame, background="green", width=100, height=100)
+        y_Frame = Frame(controls_frame, background="green", width=100, height=100)
+        z_Frame = Frame(controls_frame, background="green", width=100, height=100)
+        x_Frame.pack(anchor=NE,side=LEFT)
+        y_Frame.pack(anchor=NE,side=LEFT)
+        z_Frame.pack(anchor=NE,side=LEFT)
         Button(x_Frame,text="x1_up", command=self.x1_up).pack()
         Button(x_Frame,text="x1_down", command=self.x1_down).pack()
         Button(x_Frame,text="x2_up", command=self.x2_up).pack()
@@ -63,10 +69,10 @@ class Board(Frame):
 
 
 class RubiksCube(Canvas):
-    def __init__(self):
-        super().__init__()#width=Cons.BOARD_WIDTH, height=Cons.BOARD_HEIGHT, highlightthickness=0, background="gray")
+    def __init__(self, graphic_frame):
+        super().__init__(graphic_frame)#width=Cons.BOARD_WIDTH, height=Cons.BOARD_HEIGHT, highlightthickness=0, background="gray")
         self.initCube()
-        self.pack(anchor=NW)
+        self.pack(anchor=NW, side=RIGHT)
 
     def initCube(self):
         self.margin = 20
