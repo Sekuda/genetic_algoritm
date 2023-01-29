@@ -1,6 +1,6 @@
 import random
 import tkinter
-from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE , BOTH, Y, X
+from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE, N, BOTH, Y, X, ttk
 
 
 class Cons:
@@ -17,35 +17,40 @@ class Board(Frame):
         self.master.title('Cube')
 
         controls_frame = Frame(background='pink', width=100)
-        controls_frame.pack(fill=Y,anchor=NW)
-        graphic_frame = Frame(bg='red', width=100)
-        graphic_frame.pack(fill=BOTH,anchor=NE)
+        controls_frame.pack(anchor=NW, side=LEFT)
+        graphic_frame = Frame(bg='red', width=1000)
+        graphic_frame.pack()
         self.cube = RubiksCube(graphic_frame)
 
         x_Frame = Frame(controls_frame, background="green", width=100, height=100)
         y_Frame = Frame(controls_frame, background="green", width=100, height=100)
         z_Frame = Frame(controls_frame, background="green", width=100, height=100)
-        x_Frame.pack(anchor=NE,side=LEFT)
-        y_Frame.pack(anchor=NE,side=LEFT)
-        z_Frame.pack(anchor=NE,side=LEFT)
-        Button(x_Frame,text="x1_up", command=self.x1_up).pack()
-        Button(x_Frame,text="x1_down", command=self.x1_down).pack()
-        Button(x_Frame,text="x2_up", command=self.x2_up).pack()
-        Button(x_Frame,text="x2_down", command=self.x2_down).pack()
-        Button(x_Frame,text="x3_up", command=self.x3_up).pack()
-        Button(x_Frame,text="x3_down", command=self.x3_down).pack()
-        Button(y_Frame,text="y1_right", command=self.y1_right).pack()
-        Button(y_Frame,text="y1_left", command=self.y1_left).pack()
-        Button(y_Frame,text="y2_right", command=self.y2_right).pack()
-        Button(y_Frame,text="y2_left", command=self.y2_left).pack()
-        Button(y_Frame,text="y3_right", command=self.y3_right).pack()
-        Button(y_Frame,text="y3_left", command=self.y3_left).pack()
-        Button(z_Frame,text="z1_up", command=self.z1_up).pack()
-        Button(z_Frame,text="z1_down", command=self.z1_down).pack()
-        Button(z_Frame,text="z2_up", command=self.z2_up).pack()
-        Button(z_Frame,text="z2_down", command=self.z2_down).pack()
-        Button(z_Frame,text="z3_up", command=self.z3_up).pack()
-        Button(z_Frame,text="z3_down", command=self.z3_down).pack()
+        x_Frame.pack(side=LEFT)
+        y_Frame.pack(side=LEFT)
+        z_Frame.pack(side=LEFT)
+        ttk.Button(x_Frame,text="x1_up", command=self.x1_up).pack()
+        ttk.Button(x_Frame,text="x1_down", command=self.x1_down).pack()
+        ttk.Button(x_Frame,text="x2_up", command=self.x2_up).pack()
+        ttk.Button(x_Frame,text="x2_down", command=self.x2_down).pack()
+        ttk.Button(x_Frame,text="x3_up", command=self.x3_up).pack()
+        ttk.Button(x_Frame,text="x3_down", command=self.x3_down).pack()
+        ttk.Button(y_Frame,text="y1_right", command=self.y1_right).pack()
+        ttk.Button(y_Frame,text="y1_left", command=self.y1_left).pack()
+        ttk.Button(y_Frame,text="y2_right", command=self.y2_right).pack()
+        ttk.Button(y_Frame,text="y2_left", command=self.y2_left).pack()
+        ttk.Button(y_Frame,text="y3_right", command=self.y3_right).pack()
+        ttk.Button(y_Frame,text="y3_left", command=self.y3_left).pack()
+        ttk.Button(z_Frame,text="z1_up", command=self.z1_up).pack()
+        ttk.Button(z_Frame,text="z1_down", command=self.z1_down).pack()
+        ttk.Button(z_Frame,text="z2_up", command=self.z2_up).pack()
+        ttk.Button(z_Frame,text="z2_down", command=self.z2_down).pack()
+        ttk.Button(z_Frame,text="z3_up", command=self.z3_up).pack()
+        ttk.Button(z_Frame,text="z3_down", command=self.z3_down).pack()
+
+        ttk.Button(z_Frame,text="roll back",command=self.roll_back).pack()
+
+
+
         self.pack()
 
     def x1_up(self): self.cube.rotate(1)
@@ -66,15 +71,20 @@ class Board(Frame):
     def z2_down(self): self.cube.rotate(16)
     def z3_up(self): self.cube.rotate(17)
     def z3_down(self): self.cube.rotate(18)
+    def roll_back(self):
+        for i in range(3):
+            self.cube.rotate(self.cube.moveOreder[-1],True)
 
+        self.cube.moveOreder.pop()
 
 class RubiksCube(Canvas):
     def __init__(self, graphic_frame):
         super().__init__(graphic_frame)#width=Cons.BOARD_WIDTH, height=Cons.BOARD_HEIGHT, highlightthickness=0, background="gray")
         self.initCube()
-        self.pack(anchor=NW, side=RIGHT)
+        self.pack(anchor=N)
 
     def initCube(self):
+        self.moveOreder = []
         self.margin = 20
         self.edgeLen = 20
         self.colors = ['blue', 'yellow', 'red', 'white', 'orange', 'green']
@@ -105,7 +115,7 @@ class RubiksCube(Canvas):
                 self.create_rectangle(*bbox, fill=self.colors[self.matrix[facetInd][squareInd]], activefill="black")
         self.after(Cons.DELAY, self.printCube)
 
-    def rotate(self, move):
+    def rotate(self, move, isItRollBack = False):
         if move == 1:  # x1 up and side 0 counterclockwise
             self.verticalMove(0, True)
             self.rotateSaide(0, False)
@@ -154,6 +164,9 @@ class RubiksCube(Canvas):
         elif move == 18:  # z3 down and side 4 clockwise
             self.z_verticalMove(2, False)
             self.rotateSaide(4, True)
+        if not isItRollBack:
+            self.moveOreder.append(move)
+            print(self.getCubeArea())
 
     def verticalMove(self, columnInd, forwardTurn):
         turns = 1 if forwardTurn else 3
@@ -192,13 +205,15 @@ class RubiksCube(Canvas):
                 self.matrix[4][rowInd:rowInd+3], self.matrix[0][rowInd:rowInd+3], self.matrix[2][rowInd:rowInd+3], self.matrix[5][rowInd:rowInd+3]
 
     def getCubeArea(self):
-        pass
-
+        s = 0
+        for i in range(6):
+            s += len([x for x in self.matrix[i] if self.matrix[i][4] - 4 <= x <= self.matrix[i][4] + 4])
+        return s * 100 / 54
 
 def main():
     root = Tk()
     board = Board()
-    root.geometry("400x750+600+100")
+    root.geometry("800x500+300+100")
     root.mainloop()
 
 
