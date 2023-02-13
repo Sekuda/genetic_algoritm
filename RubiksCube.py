@@ -1,15 +1,24 @@
+import array
 import random
 import tkinter
+import elitism
 from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE, N, BOTH, Y, X, ttk
-
+import numpy
+from deap import base
+from deap import creator
+from deap import tools
+import matplotlib.pyplot as plt
 
 class Cons:
     BOARD_WIDTH = 300
     BOARD_HEIGHT = 100
     DELAY = 100
     DOT_SIZE = 10
-    MAX_RAND_POS = 27
-
+    INDIVIDUAL_LEN = 30
+    POPULATION_SIZE = 200
+    P_CROSSOVER = 0.9
+    P_MUTATION = 0.2
+    MAX_GENERATIONS = 200
 
 class Board(Frame):
     def __init__(self):
@@ -21,7 +30,7 @@ class Board(Frame):
         graphic_frame = Frame(bg='red', width=1000)
         graphic_frame.pack()
         self.cube = RubiksCube(graphic_frame)
-
+        self.cube_after_gen = RubiksCube(graphic_frame)
         x_Frame = Frame(controls_frame, background="green", width=100, height=100)
         y_Frame = Frame(controls_frame, background="green", width=100, height=100)
         z_Frame = Frame(controls_frame, background="green", width=100, height=100)
@@ -48,34 +57,128 @@ class Board(Frame):
         ttk.Button(z_Frame,text="z3_down", command=self.z3_down).pack()
 
         ttk.Button(z_Frame,text="roll back",command=self.roll_back).pack()
-
-
+        ttk.Button(y_Frame,text="rand rotate",command=self.random_rotate).pack()
+        ttk.Button(x_Frame, text="start alg", command=self.start_gen_algorithm).pack()
 
         self.pack()
 
-    def x1_up(self): self.cube.rotate(1)
-    def x1_down(self): self.cube.rotate(2)
-    def x2_up(self): self.cube.rotate(3)
-    def x2_down(self): self.cube.rotate(4)
-    def x3_up(self): self.cube.rotate(5)
-    def x3_down(self): self.cube.rotate(6)
-    def y1_right(self): self.cube.rotate(7)
-    def y1_left(self): self.cube.rotate(8)
-    def y2_right(self): self.cube.rotate(9)
-    def y2_left(self): self.cube.rotate(10)
-    def y3_right(self): self.cube.rotate(11)
-    def y3_left(self): self.cube.rotate(12)
-    def z1_up(self): self.cube.rotate(13)
-    def z1_down(self): self.cube.rotate(14)
-    def z2_up(self): self.cube.rotate(15)
-    def z2_down(self): self.cube.rotate(16)
-    def z3_up(self): self.cube.rotate(17)
-    def z3_down(self): self.cube.rotate(18)
+    def x1_up(self):
+        self.cube.rotate(1)
+    def x1_down(self):
+        self.cube.rotate(2)
+    def x2_up(self):
+        self.cube.rotate(3)
+    def x2_down(self):
+        self.cube.rotate(4)
+    def x3_up(self):
+        self.cube.rotate(5)
+    def x3_down(self):
+        self.cube.rotate(6)
+    def y1_right(self):
+        self.cube.rotate(7)
+    def y1_left(self):
+        self.cube.rotate(8)
+    def y2_right(self):
+        self.cube.rotate(9)
+    def y2_left(self):
+        self.cube.rotate(10)
+    def y3_right(self):
+        self.cube.rotate(11)
+    def y3_left(self):
+        self.cube.rotate(12)
+    def z1_up(self):
+        self.cube.rotate(13)
+    def z1_down(self):
+        self.cube.rotate(14)
+    def z2_up(self):
+        self.cube.rotate(15)
+    def z2_down(self):
+        self.cube.rotate(16)
+    def z3_up(self):
+        self.cube.rotate(17)
+    def z3_down(self):
+        self.cube.rotate(18)
     def roll_back(self):
-        for i in range(3):
-            self.cube.rotate(self.cube.moveOreder[-1],True)
+        if len(self.cube.moveOreder) > 0:
+            for i in range(3):
+                self.cube.rotate(self.cube.moveOreder[-1], False)
 
-        self.cube.moveOreder.pop()
+            self.cube.moveOreder.pop()
+    def random_rotate(self):
+        for i in range(10):
+            move = random.randint(1, 19)
+            self.cube.rotate(move)
+            self.cube_after_gen.rotate(move)
+    def start_gen_algorithm(self):
+        gen_algorithm(self.cube_after_gen)
+
+
+def gen_algorithm(cube):
+    base_condition = cube.matrix.copy()
+    toolbox = base.Toolbox()
+    creator.create("FitnessF", base.Fitness, weights=(1.0, -1.0))
+    creator.create("Individual", list, fitness=creator.FitnessF)
+
+    toolbox.register("randomOrder", random.randint, 1, 18)
+    toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.randomOrder, Cons.INDIVIDUAL_LEN)
+    toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individualCreator)
+
+    def evaluateMoveOrder(_cube, _base_condition, individual):
+        max_ind = 0
+        max_s = 0
+        for i in range(len(individual)):
+            _cube.rotate(individual[i])
+            ev = _cube.getCubeArea()
+            if ev > max_s:
+                max_ind = i
+                max_s = ev
+        _cube.matrix = _base_condition
+
+        return max_s, max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
+    def move_order_mate(individual1, individual2):
+        return individual1, individual2
+    def move_order_mutate(individual):
+        return individual,
+
+    toolbox.register("evaluate", evaluateMoveOrder, cube, base_condition)
+    toolbox.register("select", tools.selTournament, tournsize=3)
+    toolbox.register("mate", move_order_mate)
+    toolbox.register("mutate", tools.mutShuffleIndexes, indpb=1.0/Cons.INDIVIDUAL_LEN)
+
+    hof = tools.HallOfFame(30)
+    stats = tools.Statistics(lambda ind: ind.fitness.values)
+    stats.register("min", numpy.min)
+    stats.register("avg", numpy.mean)
+    population = toolbox.populationCreator(n=Cons.POPULATION_SIZE)
+
+    population, logbook = elitism.eaSimpleWithElitism(population, toolbox,
+                                              cxpb=Cons.P_CROSSOVER,
+                                              mutpb=Cons.P_MUTATION,
+                                              ngen=Cons.MAX_GENERATIONS,
+                                              stats=stats,
+                                              halloffame=hof,
+                                              verbose=True)
+
+    minFitnessValues, meanFitnessValues = logbook.select("min", "avg")
+    # Nevals представляет количество раз, чтобы вызвать функцию оценки в итерации
+    best_solution = hof.items[0]
+    print("Лучший индивидуум = ", best_solution)
+    for i in best_solution:
+        cube.rotate(i, False)
+
+    fig, axs = plt.subplots(2)
+
+    #sns.set_style("whitegrid")
+    axs[0].plot(minFitnessValues, color='red')
+    axs[0].plot(meanFitnessValues, color='green')
+    axs[0].set_xlabel('Поколение')
+    axs[0].set_ylabel('Целевая/средняя приспособленность')
+    axs[0].set_title('Зависимость целевой и средней приспособленности от поколения')
+    # plt.show()
+
+    # plot the solution:
+    plt.show()
+
 
 class RubiksCube(Canvas):
     def __init__(self, graphic_frame):
@@ -115,7 +218,7 @@ class RubiksCube(Canvas):
                 self.create_rectangle(*bbox, fill=self.colors[self.matrix[facetInd][squareInd]], activefill="black")
         self.after(Cons.DELAY, self.printCube)
 
-    def rotate(self, move, isItRollBack = False):
+    def rotate(self, move, saveMoveOrder = True):
         if move == 1:  # x1 up and side 0 counterclockwise
             self.verticalMove(0, True)
             self.rotateSaide(0, False)
@@ -164,9 +267,9 @@ class RubiksCube(Canvas):
         elif move == 18:  # z3 down and side 4 clockwise
             self.z_verticalMove(2, False)
             self.rotateSaide(4, True)
-        if not isItRollBack:
+        if saveMoveOrder:
             self.moveOreder.append(move)
-            print(self.getCubeArea())
+            #print(self.getCubeArea())
 
     def verticalMove(self, columnInd, forwardTurn):
         turns = 1 if forwardTurn else 3
@@ -210,10 +313,11 @@ class RubiksCube(Canvas):
             s += len([x for x in self.matrix[i] if self.matrix[i][4] - 4 <= x <= self.matrix[i][4] + 4])
         return s * 100 / 54
 
+
 def main():
     root = Tk()
     board = Board()
-    root.geometry("800x500+300+100")
+    root.geometry("800x800+300+100")
     root.mainloop()
 
 
