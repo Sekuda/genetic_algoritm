@@ -112,6 +112,23 @@ class Board(Frame):
     def start_gen_algorithm(self):
         gen_algorithm(self.cube_after_gen)
 
+def deleteUselessMovements(m):
+    for i in range(len(m)):
+        k = i + 1
+        if k < len(m):
+            if m[i]%2 == 0 and (m[i] - 1) == m[k]:
+                print(f"delete item {m[i]} and {m[k]}")
+                m.pop(k)
+                m.pop(i)
+                m.extend([random.randint(1,18),random.randint(1,18)])
+                deleteUselessMovements(m)
+            elif m[i]%2 > 0 and (m[i] + 1) == m[k]:
+                print(f"delete item {m[i]} and {m[k]}")
+                m.pop(k)
+                m.pop(i)
+                m.extend([random.randint(1,18),random.randint(1,18)])
+                deleteUselessMovements(m)
+
 
 def gen_algorithm(cube):
     base_condition = cube.matrix.copy()
