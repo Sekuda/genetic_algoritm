@@ -136,6 +136,7 @@ def gen_algorithm(cube):
 
         return max_s, max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
     def move_order_mate(individual1, individual2):
+        # определить лучший индекс, среди 2х индивидуумов, отрубить и зарандомить хвост
         return individual1, individual2
     def move_order_mutate(individual):
         return individual,
