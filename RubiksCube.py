@@ -117,13 +117,13 @@ def deleteUselessMovements(m):
         k = i + 1
         if k < len(m):
             if m[i]%2 == 0 and (m[i] - 1) == m[k]:
-                print(f"delete item {m[i]} and {m[k]}")
+                #print(f"delete item {m[i]} and {m[k]}")
                 m.pop(k)
                 m.pop(i)
                 m.extend([random.randint(1,18),random.randint(1,18)])
                 deleteUselessMovements(m)
             elif m[i]%2 > 0 and (m[i] + 1) == m[k]:
-                print(f"delete item {m[i]} and {m[k]}")
+                #print(f"delete item {m[i]} and {m[k]}")
                 m.pop(k)
                 m.pop(i)
                 m.extend([random.randint(1,18),random.randint(1,18)])
@@ -154,6 +154,8 @@ def gen_algorithm(cube):
         return max_s, max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
     def move_order_mate(individual1, individual2):
         # определить лучший индекс, среди 2х индивидуумов, отрубить и зарандомить хвост
+        deleteUselessMovements(individual1)
+        deleteUselessMovements(individual2)
         return individual1, individual2
     def move_order_mutate(individual):
         return individual,
