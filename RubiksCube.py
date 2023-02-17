@@ -1,6 +1,5 @@
-import array
+
 import random
-import tkinter
 import elitism
 from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE, N, BOTH, Y, X, ttk
 import numpy
@@ -8,6 +7,7 @@ from deap import base
 from deap import creator
 from deap import tools
 import matplotlib.pyplot as plt
+
 
 class Cons:
     BOARD_WIDTH = 300
@@ -18,7 +18,8 @@ class Cons:
     POPULATION_SIZE = 200
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
-    MAX_GENERATIONS = 200
+    MAX_GENERATIONS = 50
+
 
 class Board(Frame):
     def __init__(self):
@@ -112,23 +113,6 @@ class Board(Frame):
     def start_gen_algorithm(self):
         gen_algorithm(self.cube_after_gen)
 
-def deleteUselessMovements(m):
-    for i in range(len(m)):
-        k = i + 1
-        if k < len(m):
-            if m[i]%2 == 0 and (m[i] - 1) == m[k]:
-                #print(f"delete item {m[i]} and {m[k]}")
-                m.pop(k)
-                m.pop(i)
-                m.extend([random.randint(1,18),random.randint(1,18)])
-                deleteUselessMovements(m)
-            elif m[i]%2 > 0 and (m[i] + 1) == m[k]:
-                #print(f"delete item {m[i]} and {m[k]}")
-                m.pop(k)
-                m.pop(i)
-                m.extend([random.randint(1,18),random.randint(1,18)])
-                deleteUselessMovements(m)
-
 
 def gen_algorithm(cube):
     base_condition = cube.matrix.copy()
@@ -139,6 +123,23 @@ def gen_algorithm(cube):
     toolbox.register("randomOrder", random.randint, 1, 18)
     toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.randomOrder, Cons.INDIVIDUAL_LEN)
     toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individualCreator)
+
+    def deleteUselessMovements(m):
+        for i in range(len(m)):
+            k = i + 1
+            if k < len(m):
+                if m[i] % 2 == 0 and (m[i] - 1) == m[k]:
+                    # print(f"delete item {m[i]} and {m[k]}")
+                    m.pop(k)
+                    m.pop(i)
+                    m.extend([random.randint(1,18),random.randint(1,18)])
+                    deleteUselessMovements(m)
+                elif m[i] % 2 > 0 and (m[i] + 1) == m[k]:
+                    # print(f"delete item {m[i]} and {m[k]}")
+                    m.pop(k)
+                    m.pop(i)
+                    m.extend([random.randint(1,18),random.randint(1,18)])
+                    deleteUselessMovements(m)
 
     def evaluateMoveOrder(_cube, _base_condition, individual):
         max_ind = 0
@@ -152,11 +153,33 @@ def gen_algorithm(cube):
         _cube.matrix = _base_condition
 
         return max_s, max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
+
     def move_order_mate(individual1, individual2):
-        # определить лучший индекс, среди 2х индивидуумов, отрубить и зарандомить хвост
         deleteUselessMovements(individual1)
         deleteUselessMovements(individual2)
+        # определить лучший индекс, среди 2х индивидуумов, отрубить и зарандомить хвост
+        max_s1, max_ind1 = evaluateMoveOrder(cube, base_condition, individual1)
+        max_s2, max_ind2 = evaluateMoveOrder(cube, base_condition, individual2)
+
+        if int(max_s1) > int(max_s2):
+            tail1 = [random.randint(1, 18) for x in range(len(individual1)-max_ind1)]
+            tail2 = [random.randint(1, 18) for x in range(len(individual1)-max_ind1)]
+            individual1[:] = individual1[:max_ind1] + tail1
+            individual2[:] = individual1[:max_ind1] + tail2
+        elif int(max_s1) < int(max_s2):
+            tail1 = [random.randint(1, 18) for x in range(len(individual2) - max_ind2)]
+            tail2 = [random.randint(1, 18) for x in range(len(individual2) - max_ind2)]
+            individual1[:] = individual2[:max_ind2] + tail1
+            individual2[:] = individual2[:max_ind2] + tail2
+        elif int(max_s1) == int(max_s2):
+            max_ind = numpy.minimum(max_ind1, max_ind1)
+            tail1 = [random.randint(1, 18) for x in range(len(individual2) - max_ind)]
+            tail2 = [random.randint(1, 18) for x in range(len(individual2) - max_ind)]
+            individual1[:] = individual2[:max_ind] + tail1
+            individual2[:] = individual2[:max_ind] + tail2
+
         return individual1, individual2
+
     def move_order_mutate(individual):
         return individual,
 
@@ -167,7 +190,7 @@ def gen_algorithm(cube):
 
     hof = tools.HallOfFame(30)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("min", numpy.min)
+    stats.register("max", numpy.max)
     stats.register("avg", numpy.mean)
     population = toolbox.populationCreator(n=Cons.POPULATION_SIZE)
 
@@ -179,12 +202,14 @@ def gen_algorithm(cube):
                                               halloffame=hof,
                                               verbose=True)
 
-    minFitnessValues, meanFitnessValues = logbook.select("min", "avg")
+    minFitnessValues, meanFitnessValues = logbook.select("max", "avg")
     # Nevals представляет количество раз, чтобы вызвать функцию оценки в итерации
     best_solution = hof.items[0]
-    print("Лучший индивидуум = ", best_solution)
+    x, max_ind = evaluateMoveOrder(cube, base_condition, best_solution)
+    print(f"Лучший индивидуум = {best_solution}, s = {x} on index {max_ind}", )
     for i in best_solution:
-        cube.rotate(i, False)
+        if i <= max_ind:
+            cube.rotate(i, False)
 
     fig, axs = plt.subplots(2)
 
