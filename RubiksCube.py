@@ -1,4 +1,4 @@
-
+import copy
 import random
 import elitism
 from tkinter import Tk, Canvas, Frame, ALL, Button, Label, LEFT, RIGHT, NW, NE, N, BOTH, Y, X, ttk
@@ -14,11 +14,12 @@ class Cons:
     BOARD_HEIGHT = 100
     DELAY = 100
     DOT_SIZE = 10
+    EFFECTIVE_LEN = 20
     INDIVIDUAL_LEN = 30
-    POPULATION_SIZE = 200
+    POPULATION_SIZE = 500
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
-    MAX_GENERATIONS = 50
+    MAX_GENERATIONS = 300
 
 
 class Board(Frame):
@@ -38,24 +39,24 @@ class Board(Frame):
         x_Frame.pack(side=LEFT)
         y_Frame.pack(side=LEFT)
         z_Frame.pack(side=LEFT)
-        ttk.Button(x_Frame,text="x1_up", command=self.x1_up).pack()
-        ttk.Button(x_Frame,text="x1_down", command=self.x1_down).pack()
-        ttk.Button(x_Frame,text="x2_up", command=self.x2_up).pack()
-        ttk.Button(x_Frame,text="x2_down", command=self.x2_down).pack()
-        ttk.Button(x_Frame,text="x3_up", command=self.x3_up).pack()
-        ttk.Button(x_Frame,text="x3_down", command=self.x3_down).pack()
-        ttk.Button(y_Frame,text="y1_right", command=self.y1_right).pack()
-        ttk.Button(y_Frame,text="y1_left", command=self.y1_left).pack()
-        ttk.Button(y_Frame,text="y2_right", command=self.y2_right).pack()
-        ttk.Button(y_Frame,text="y2_left", command=self.y2_left).pack()
-        ttk.Button(y_Frame,text="y3_right", command=self.y3_right).pack()
-        ttk.Button(y_Frame,text="y3_left", command=self.y3_left).pack()
-        ttk.Button(z_Frame,text="z1_up", command=self.z1_up).pack()
-        ttk.Button(z_Frame,text="z1_down", command=self.z1_down).pack()
-        ttk.Button(z_Frame,text="z2_up", command=self.z2_up).pack()
-        ttk.Button(z_Frame,text="z2_down", command=self.z2_down).pack()
-        ttk.Button(z_Frame,text="z3_up", command=self.z3_up).pack()
-        ttk.Button(z_Frame,text="z3_down", command=self.z3_down).pack()
+        ttk.Button(x_Frame,text="[1] x1_up", command=self.x1_up).pack()
+        ttk.Button(x_Frame,text="[2] x1_down", command=self.x1_down).pack()
+        ttk.Button(x_Frame,text="[3] x2_up", command=self.x2_up).pack()
+        ttk.Button(x_Frame,text="[4] x2_down", command=self.x2_down).pack()
+        ttk.Button(x_Frame,text="[5] x3_up", command=self.x3_up).pack()
+        ttk.Button(x_Frame,text="[6] x3_down", command=self.x3_down).pack()
+        ttk.Button(y_Frame,text="[7] y1_right", command=self.y1_right).pack()
+        ttk.Button(y_Frame,text="[8] y1_left", command=self.y1_left).pack()
+        ttk.Button(y_Frame,text="[9] y2_right", command=self.y2_right).pack()
+        ttk.Button(y_Frame,text="[10] y2_left", command=self.y2_left).pack()
+        ttk.Button(y_Frame,text="[11] y3_right", command=self.y3_right).pack()
+        ttk.Button(y_Frame,text="[12] y3_left", command=self.y3_left).pack()
+        ttk.Button(z_Frame,text="[13] z1_up", command=self.z1_up).pack()
+        ttk.Button(z_Frame,text="[14] z1_down", command=self.z1_down).pack()
+        ttk.Button(z_Frame,text="[15] z2_up", command=self.z2_up).pack()
+        ttk.Button(z_Frame,text="[16] z2_down", command=self.z2_down).pack()
+        ttk.Button(z_Frame,text="[17] z3_up", command=self.z3_up).pack()
+        ttk.Button(z_Frame,text="[18] z3_down", command=self.z3_down).pack()
 
         ttk.Button(z_Frame,text="roll back",command=self.roll_back).pack()
         ttk.Button(y_Frame,text="rand rotate",command=self.random_rotate).pack()
@@ -111,11 +112,11 @@ class Board(Frame):
             self.cube.rotate(move)
             self.cube_after_gen.rotate(move)
     def start_gen_algorithm(self):
-        gen_algorithm(self.cube_after_gen)
+        gen_algorithm(self.cube_after_gen, self.cube)
 
 
-def gen_algorithm(cube):
-    base_condition = cube.matrix.copy()
+def gen_algorithm(cube, base_cube):
+    base_condition = copy.deepcopy(cube.matrix)
     toolbox = base.Toolbox()
     creator.create("FitnessF", base.Fitness, weights=(1.0, -1.0))
     creator.create("Individual", list, fitness=creator.FitnessF)
@@ -142,15 +143,17 @@ def gen_algorithm(cube):
                     deleteUselessMovements(m)
 
     def evaluateMoveOrder(_cube, _base_condition, individual):
+        #если за INDIVIDUAL_LEN ходов не собрался на 100%, тогда берём максимум среди EFFECTIVE_LEN,
+        #тем самым создавая в хвосте буфер для завершения сборки длиной INDIVIDUAL_LEN-EFFECTIVE_LEN
         max_ind = 0
         max_s = 0
         for i in range(len(individual)):
-            _cube.rotate(individual[i])
+            _cube.rotate(individual[i], False)
             ev = _cube.getCubeArea()
             if ev > max_s:
                 max_ind = i
                 max_s = ev
-        _cube.matrix = _base_condition
+        _cube.matrix = copy.deepcopy(_base_condition)
 
         return max_s, max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
 
@@ -188,7 +191,7 @@ def gen_algorithm(cube):
     toolbox.register("mate", move_order_mate)
     toolbox.register("mutate", tools.mutShuffleIndexes, indpb=1.0/Cons.INDIVIDUAL_LEN)
 
-    hof = tools.HallOfFame(30)
+    hof = tools.HallOfFame(10)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register("max", numpy.max)
     stats.register("avg", numpy.mean)
@@ -202,19 +205,19 @@ def gen_algorithm(cube):
                                               halloffame=hof,
                                               verbose=True)
 
-    minFitnessValues, meanFitnessValues = logbook.select("max", "avg")
+    maxFitnessValues, meanFitnessValues = logbook.select("max", "avg")
     # Nevals представляет количество раз, чтобы вызвать функцию оценки в итерации
     best_solution = hof.items[0]
     x, max_ind = evaluateMoveOrder(cube, base_condition, best_solution)
     print(f"Лучший индивидуум = {best_solution}, s = {x} on index {max_ind}", )
-    for i in best_solution:
+    for i in range(len(best_solution)):
         if i <= max_ind:
-            cube.rotate(i, False)
+            cube.rotate(best_solution[i], False)
 
     fig, axs = plt.subplots(2)
 
     #sns.set_style("whitegrid")
-    axs[0].plot(minFitnessValues, color='red')
+    axs[0].plot(maxFitnessValues, color='red')
     axs[0].plot(meanFitnessValues, color='green')
     axs[0].set_xlabel('Поколение')
     axs[0].set_ylabel('Целевая/средняя приспособленность')
