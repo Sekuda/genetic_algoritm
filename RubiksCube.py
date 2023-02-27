@@ -20,6 +20,7 @@ class Cons:
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
     MAX_GENERATIONS = 300
+    HOF_LEN = 10
 
 
 class Board(Frame):
@@ -186,15 +187,25 @@ def gen_algorithm(cube, base_cube):
     def move_order_mutate(individual):
         return individual,
 
+    def my_max(values):
+        persent_values = [value[0] for value in values]
+        return numpy.max(persent_values)
+
+    def my_mean(values):
+        persent_values = [value[0] for value in values]
+        return numpy.mean(persent_values)
+
     toolbox.register("evaluate", evaluateMoveOrder, cube, base_condition)
     toolbox.register("select", tools.selTournament, tournsize=3)
     toolbox.register("mate", move_order_mate)
     toolbox.register("mutate", tools.mutShuffleIndexes, indpb=1.0/Cons.INDIVIDUAL_LEN)
 
-    hof = tools.HallOfFame(10)
+    hof = tools.HallOfFame(Cons.HOF_LEN)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
-    stats.register("max", numpy.max)
-    stats.register("avg", numpy.mean)
+    # stats.register("max", numpy.max)
+    # stats.register("avg", numpy.mean)
+    stats.register("max", my_max)
+    stats.register("avg", my_mean)
     population = toolbox.populationCreator(n=Cons.POPULATION_SIZE)
 
     population, logbook = elitism.eaSimpleWithElitism(population, toolbox,
