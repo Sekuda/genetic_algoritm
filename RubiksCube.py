@@ -8,6 +8,7 @@ from deap import creator
 from deap import tools
 import matplotlib.pyplot as plt
 
+random.seed(41)
 
 class Cons:
     BOARD_WIDTH = 300
@@ -19,7 +20,7 @@ class Cons:
     POPULATION_SIZE = 500
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
-    MAX_GENERATIONS = 300
+    MAX_GENERATIONS = 100
     HOF_LEN = 10
 
 
@@ -117,10 +118,17 @@ class Board(Frame):
 
 
 def gen_algorithm(cube, base_cube):
+
+    class Livelist(list):
+        def __init__(self, *args, **kwargs):
+            super(Livelist, self).__init__(args[0])
+            self.live = 0
+
+
     base_condition = copy.deepcopy(cube.matrix)
     toolbox = base.Toolbox()
     creator.create("FitnessF", base.Fitness, weights=(1.0, -1.0))
-    creator.create("Individual", list, fitness=creator.FitnessF)
+    creator.create("Individual", Livelist, fitness=creator.FitnessF)
 
     toolbox.register("randomOrder", random.randint, 1, 18)
     toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.randomOrder, Cons.INDIVIDUAL_LEN)
@@ -161,6 +169,7 @@ def gen_algorithm(cube, base_cube):
     def move_order_mate(individual1, individual2):
         deleteUselessMovements(individual1)
         deleteUselessMovements(individual2)
+
         # определить лучший индекс, среди 2х индивидуумов, отрубить и зарандомить хвост
         max_s1, max_ind1 = evaluateMoveOrder(cube, base_condition, individual1)
         max_s2, max_ind2 = evaluateMoveOrder(cube, base_condition, individual2)
