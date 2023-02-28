@@ -17,14 +17,14 @@ class Cons:
     BOARD_HEIGHT = 100
     DELAY = 100
     DOT_SIZE = 10
-    EFFECTIVE_LEN = 20
-    INDIVIDUAL_LEN = 30
-    POPULATION_SIZE = 100
+    EFFECTIVE_LEN = 27
+    INDIVIDUAL_LEN = 37
+    POPULATION_SIZE = 1000
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
-    MAX_GENERATIONS = 30
+    MAX_GENERATIONS = 300
     HOF_LEN = 10
-    ROTATE_LEN = 10
+    ROTATE_LEN = 5
 
 class Board(Frame):
     def __init__(self):
