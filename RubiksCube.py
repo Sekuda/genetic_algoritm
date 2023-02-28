@@ -1,3 +1,5 @@
+# [14, 1, 16, 13, 8, 1, 3, 5]
+
 import copy
 import random
 import elitism
@@ -64,6 +66,8 @@ class Board(Frame):
         ttk.Button(y_Frame,text="rand rotate",command=self.random_rotate).pack()
         ttk.Button(x_Frame, text="start alg", command=self.start_gen_algorithm).pack()
 
+        ttk.Button(x_Frame, text="reset", command=self.reset).pack()
+
         self.pack()
 
     def x1_up(self):
@@ -115,7 +119,9 @@ class Board(Frame):
             self.cube_after_gen.rotate(move)
     def start_gen_algorithm(self):
         gen_algorithm(self.cube_after_gen, self.cube)
-
+    def reset(self):
+        self.cube.reset()
+        self.cube_after_gen.reset()
 
 def gen_algorithm(cube, base_cube):
 
@@ -196,13 +202,17 @@ def gen_algorithm(cube, base_cube):
     def move_order_mutate(individual):
         return individual,
 
-    def my_max(values):
-        persent_values = [value[0] for value in values]
-        return numpy.max(persent_values)
-
     def my_mean(values):
         persent_values = [value[0] for value in values]
         return numpy.mean(persent_values)
+
+    def my_max(values):
+        i_max = 0
+        i_ind = 0
+        for i in range(len(values)):
+            if values[i][0] > i_max:
+                i_max, i_ind = values[i]
+        return round(i_max, 2), i_ind
 
     toolbox.register("evaluate", evaluateMoveOrder, cube, base_condition)
     toolbox.register("select", tools.selTournament, tournsize=3)
@@ -215,6 +225,7 @@ def gen_algorithm(cube, base_cube):
     # stats.register("avg", numpy.mean)
     stats.register("max", my_max)
     stats.register("avg", my_mean)
+
     population = toolbox.populationCreator(n=Cons.POPULATION_SIZE)
 
     population, logbook = elitism.eaSimpleWithElitism(population, toolbox,
@@ -304,15 +315,15 @@ class RubiksCube(Canvas):
             self.verticalMove(2, False)
             self.rotateSaide(5, False)
         elif move == 7:  # y1 right and side 3 clockwise
-            self.horisontalMove(6, True)
+            self.horisontalMove(2, True) #6
             self.rotateSaide(3, True)
         elif move == 8:  # y1 left and side 3 counterclockwise
-            self.horisontalMove(6, False)
+            self.horisontalMove(2, False) #6
             self.rotateSaide(3, False)
         elif move == 9:  # y2 right
-            self.horisontalMove(3, True)
+            self.horisontalMove(1, True) #3
         elif move == 10:  # y2 left
-            self.horisontalMove(3, False)
+            self.horisontalMove(1, False) #3
         elif move == 11:  # y3 right and side 1 counterclockwise
             self.horisontalMove(0, True)
             self.rotateSaide(1, False)
@@ -338,6 +349,7 @@ class RubiksCube(Canvas):
         if saveMoveOrder:
             self.moveOreder.append(move)
             #print(self.getCubeArea())
+            # print(self.moveOreder)
 
     def verticalMove(self, columnInd, forwardTurn):
         turns = 1 if forwardTurn else 3
@@ -372,8 +384,15 @@ class RubiksCube(Canvas):
     def horisontalMove(self, rowInd, rightTurn):
         turns = 1 if rightTurn else 3
         for i in range(turns):
-            self.matrix[0][rowInd:rowInd+3], self.matrix[2][rowInd:rowInd+3], self.matrix[5][rowInd:rowInd+3], self.matrix[4][rowInd:rowInd+3] = \
-                self.matrix[4][rowInd:rowInd+3], self.matrix[0][rowInd:rowInd+3], self.matrix[2][rowInd:rowInd+3], self.matrix[5][rowInd:rowInd+3]
+            if rowInd == 0:
+                self.matrix[0][0:3], self.matrix[2][0:3], self.matrix[5][0:3], self.matrix[4][8:5:-1] = \
+                    self.matrix[4][8:5:-1], self.matrix[0][0:3], self.matrix[2][0:3], self.matrix[5][0:3]
+            elif rowInd == 1:
+                self.matrix[0][3:6], self.matrix[2][3:6], self.matrix[5][3:6], self.matrix[4][5:2:-1] = \
+                    self.matrix[4][5:2:-1], self.matrix[0][3:6], self.matrix[2][3:6], self.matrix[5][3:6]
+            elif rowInd == 2:
+                self.matrix[0][6:9], self.matrix[2][6:9], self.matrix[5][6:9], self.matrix[4][2::-1] = \
+                    self.matrix[4][2::-1], self.matrix[0][6:9], self.matrix[2][6:9], self.matrix[5][6:9]
 
     def getCubeArea(self):
         s = 0
@@ -381,6 +400,8 @@ class RubiksCube(Canvas):
             s += len([x for x in self.matrix[i] if self.matrix[i][4] - 4 <= x <= self.matrix[i][4] + 4])
         return s * 100 / 54
 
+    def reset(self):
+        self.initCube()
 
 def main():
     root = Tk()
