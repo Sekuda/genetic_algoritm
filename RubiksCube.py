@@ -19,12 +19,12 @@ class Cons:
     DOT_SIZE = 10
     EFFECTIVE_LEN = 20
     INDIVIDUAL_LEN = 30
-    POPULATION_SIZE = 1000
+    POPULATION_SIZE = 100
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
-    MAX_GENERATIONS = 300
+    MAX_GENERATIONS = 30
     HOF_LEN = 10
-    ROTATE_LEN = 4
+    ROTATE_LEN = 10
 
 class Board(Frame):
     def __init__(self):
@@ -250,7 +250,9 @@ def gen_algorithm(cube, base_cube):
     best_solution = hof.items[0]
     x, max_ind = evaluateMoveOrder(cube, base_condition, best_solution)
     print(f"Лучший индивидуум = {best_solution}, s = {x} on index {max_ind}", )
-    print(f"Ответ = {[x-1 if x%2==0 else x+1 for x in cube.moveOreder[::-1]]}", )
+    answer = [x-1 if x % 2 == 0 else x+1 for x in cube.moveOreder[::-1]]
+    deleteUselessMovements(answer)
+    print(f"Ответ = {answer}", )
     for i in range(len(best_solution)):
         if i <= max_ind:
             cube.rotate(best_solution[i], False)
