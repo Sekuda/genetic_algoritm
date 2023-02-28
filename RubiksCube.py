@@ -19,12 +19,12 @@ class Cons:
     DOT_SIZE = 10
     EFFECTIVE_LEN = 20
     INDIVIDUAL_LEN = 30
-    POPULATION_SIZE = 500
+    POPULATION_SIZE = 1000
     P_CROSSOVER = 0.9
     P_MUTATION = 0.2
-    MAX_GENERATIONS = 100
+    MAX_GENERATIONS = 300
     HOF_LEN = 10
-
+    ROTATE_LEN = 4
 
 class Board(Frame):
     def __init__(self):
@@ -112,9 +112,10 @@ class Board(Frame):
                 self.cube.rotate(self.cube.moveOreder[-1], False)
 
             self.cube.moveOreder.pop()
+            print(self.cube.getCubeArea())
     def random_rotate(self):
-        for i in range(10):
-            move = random.randint(1, 19)
+        for i in range(Cons.ROTATE_LEN):
+            move = random.randint(1, 18)
             self.cube.rotate(move)
             self.cube_after_gen.rotate(move)
     def start_gen_algorithm(self):
@@ -162,15 +163,23 @@ def gen_algorithm(cube, base_cube):
         #тем самым создавая в хвосте буфер для завершения сборки длиной INDIVIDUAL_LEN-EFFECTIVE_LEN
         max_ind = 0
         max_s = 0
+        total_max_ind = 0
+        total_max_s = 0
         for i in range(len(individual)):
             _cube.rotate(individual[i], False)
             ev = _cube.getCubeArea()
-            if ev > max_s:
-                max_ind = i
-                max_s = ev
-        _cube.matrix = copy.deepcopy(_base_condition)
+            if ev > total_max_s:
+                total_max_ind = i
+                total_max_s = ev
+                if i <= Cons.EFFECTIVE_LEN:
+                    max_ind = i
+                    max_s = ev
 
-        return max_s, max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
+        _cube.matrix = copy.deepcopy(_base_condition)
+        if total_max_s == 100:
+            return total_max_s, total_max_ind         #макс процент сборки среди каждого хода, индекс максимального процента
+        else:
+            return max_s, max_ind
 
     def move_order_mate(individual1, individual2):
         deleteUselessMovements(individual1)
@@ -241,6 +250,7 @@ def gen_algorithm(cube, base_cube):
     best_solution = hof.items[0]
     x, max_ind = evaluateMoveOrder(cube, base_condition, best_solution)
     print(f"Лучший индивидуум = {best_solution}, s = {x} on index {max_ind}", )
+    print(f"Ответ = {[x-1 if x%2==0 else x+1 for x in cube.moveOreder[::-1]]}", )
     for i in range(len(best_solution)):
         if i <= max_ind:
             cube.rotate(best_solution[i], False)
@@ -270,6 +280,7 @@ class RubiksCube(Canvas):
         self.margin = 20
         self.edgeLen = 20
         self.colors = ['blue', 'yellow', 'red', 'white', 'orange', 'green']
+        self.base_matrix = [[y + x * 9 for y in range(0, 9)] for x in range(6)]
         self.matrix = [[y + x * 9 for y in range(0, 9)] for x in range(6)]
         # двумерный [лево, верх, фронт, низ, спина, право]
         self.colors = [self.colors[x // 9] for x in range(54)]
@@ -394,11 +405,19 @@ class RubiksCube(Canvas):
                 self.matrix[0][6:9], self.matrix[2][6:9], self.matrix[5][6:9], self.matrix[4][2::-1] = \
                     self.matrix[4][2::-1], self.matrix[0][6:9], self.matrix[2][6:9], self.matrix[5][6:9]
 
-    def getCubeArea(self):
+    def getCubeArea1(self):
         s = 0
         for i in range(6):
             s += len([x for x in self.matrix[i] if self.matrix[i][4] - 4 <= x <= self.matrix[i][4] + 4])
         return s * 100 / 54
+
+    def getCubeArea(self):
+        counter = 0 #54 in total
+        for i in range(len(self.base_matrix)):
+            for k in range(len(self.base_matrix[i])):
+                if self.matrix[i][k] == self.base_matrix[i][k]:
+                    counter += 1
+        return counter * 100 / 54
 
     def reset(self):
         self.initCube()

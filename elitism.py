@@ -53,6 +53,8 @@ def eaSimpleWithElitism(population, toolbox, cxpb, mutpb, ngen, stats=None,
         logbook.record(gen=gen, nevals=len(invalid_ind), **record)
         if verbose:
             print(logbook.stream)
+        if record['max'][0] == 100:
+            break
 
     return population, logbook
 
