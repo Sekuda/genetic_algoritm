@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 random.seed(41)
 
 class Cons:
+    MOVE_CNT = 12
     BOARD_WIDTH = 300
     BOARD_HEIGHT = 100
     DELAY = 100
@@ -21,10 +22,10 @@ class Cons:
     INDIVIDUAL_LEN = 37
     POPULATION_SIZE = 1000
     P_CROSSOVER = 0.9
-    P_MUTATION = 0.2
-    MAX_GENERATIONS = 300
+    P_MUTATION = 0.6
+    MAX_GENERATIONS = 1000
     HOF_LEN = 10
-    ROTATE_LEN = 5
+    ROTATE_LEN = 10
 
 class Board(Frame):
     def __init__(self):
@@ -45,22 +46,16 @@ class Board(Frame):
         z_Frame.pack(side=LEFT)
         ttk.Button(x_Frame,text="[1] x1_up", command=self.x1_up).pack()
         ttk.Button(x_Frame,text="[2] x1_down", command=self.x1_down).pack()
-        ttk.Button(x_Frame,text="[3] x2_up", command=self.x2_up).pack()
-        ttk.Button(x_Frame,text="[4] x2_down", command=self.x2_down).pack()
-        ttk.Button(x_Frame,text="[5] x3_up", command=self.x3_up).pack()
-        ttk.Button(x_Frame,text="[6] x3_down", command=self.x3_down).pack()
-        ttk.Button(y_Frame,text="[7] y1_right", command=self.y1_right).pack()
-        ttk.Button(y_Frame,text="[8] y1_left", command=self.y1_left).pack()
-        ttk.Button(y_Frame,text="[9] y2_right", command=self.y2_right).pack()
-        ttk.Button(y_Frame,text="[10] y2_left", command=self.y2_left).pack()
-        ttk.Button(y_Frame,text="[11] y3_right", command=self.y3_right).pack()
-        ttk.Button(y_Frame,text="[12] y3_left", command=self.y3_left).pack()
-        ttk.Button(z_Frame,text="[13] z1_up", command=self.z1_up).pack()
-        ttk.Button(z_Frame,text="[14] z1_down", command=self.z1_down).pack()
-        ttk.Button(z_Frame,text="[15] z2_up", command=self.z2_up).pack()
-        ttk.Button(z_Frame,text="[16] z2_down", command=self.z2_down).pack()
-        ttk.Button(z_Frame,text="[17] z3_up", command=self.z3_up).pack()
-        ttk.Button(z_Frame,text="[18] z3_down", command=self.z3_down).pack()
+        ttk.Button(x_Frame,text="[3] x3_up", command=self.x3_up).pack()
+        ttk.Button(x_Frame,text="[4] x3_down", command=self.x3_down).pack()
+        ttk.Button(y_Frame,text="[5] y1_right", command=self.y1_right).pack()
+        ttk.Button(y_Frame,text="[6] y1_left", command=self.y1_left).pack()
+        ttk.Button(y_Frame,text="[7] y3_right", command=self.y3_right).pack()
+        ttk.Button(y_Frame,text="[8] y3_left", command=self.y3_left).pack()
+        ttk.Button(z_Frame,text="[9] z1_up", command=self.z1_up).pack()
+        ttk.Button(z_Frame,text="[10] z1_down", command=self.z1_down).pack()
+        ttk.Button(z_Frame,text="[11] z3_up", command=self.z3_up).pack()
+        ttk.Button(z_Frame,text="[12] z3_down", command=self.z3_down).pack()
 
         ttk.Button(z_Frame,text="roll back",command=self.roll_back).pack()
         ttk.Button(y_Frame,text="rand rotate",command=self.random_rotate).pack()
@@ -74,38 +69,26 @@ class Board(Frame):
         self.cube.rotate(1)
     def x1_down(self):
         self.cube.rotate(2)
-    def x2_up(self):
-        self.cube.rotate(3)
-    def x2_down(self):
-        self.cube.rotate(4)
     def x3_up(self):
-        self.cube.rotate(5)
+        self.cube.rotate(3)
     def x3_down(self):
-        self.cube.rotate(6)
+        self.cube.rotate(4)
     def y1_right(self):
-        self.cube.rotate(7)
+        self.cube.rotate(5)
     def y1_left(self):
-        self.cube.rotate(8)
-    def y2_right(self):
-        self.cube.rotate(9)
-    def y2_left(self):
-        self.cube.rotate(10)
+        self.cube.rotate(6)
     def y3_right(self):
-        self.cube.rotate(11)
+        self.cube.rotate(7)
     def y3_left(self):
-        self.cube.rotate(12)
+        self.cube.rotate(8)
     def z1_up(self):
-        self.cube.rotate(13)
+        self.cube.rotate(9)
     def z1_down(self):
-        self.cube.rotate(14)
-    def z2_up(self):
-        self.cube.rotate(15)
-    def z2_down(self):
-        self.cube.rotate(16)
+        self.cube.rotate(10)
     def z3_up(self):
-        self.cube.rotate(17)
+        self.cube.rotate(11)
     def z3_down(self):
-        self.cube.rotate(18)
+        self.cube.rotate(12)
     def roll_back(self):
         if len(self.cube.moveOreder) > 0:
             for i in range(3):
@@ -115,7 +98,7 @@ class Board(Frame):
             print(self.cube.getCubeArea())
     def random_rotate(self):
         for i in range(Cons.ROTATE_LEN):
-            move = random.randint(1, 18)
+            move = random.randint(1, Cons.MOVE_CNT)
             self.cube.rotate(move)
             self.cube_after_gen.rotate(move)
     def start_gen_algorithm(self):
@@ -137,7 +120,7 @@ def gen_algorithm(cube, base_cube):
     creator.create("FitnessF", base.Fitness, weights=(1.0, -1.0))
     creator.create("Individual", Livelist, fitness=creator.FitnessF)
 
-    toolbox.register("randomOrder", random.randint, 1, 18)
+    toolbox.register("randomOrder", random.randint, 1, Cons.MOVE_CNT)
     toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.randomOrder, Cons.INDIVIDUAL_LEN)
     toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individualCreator)
 
@@ -149,13 +132,13 @@ def gen_algorithm(cube, base_cube):
                     # print(f"delete item {m[i]} and {m[k]}")
                     m.pop(k)
                     m.pop(i)
-                    m.extend([random.randint(1,18),random.randint(1,18)])
+                    m.extend([random.randint(1,Cons.MOVE_CNT),random.randint(1,Cons.MOVE_CNT)])
                     deleteUselessMovements(m)
                 elif m[i] % 2 > 0 and (m[i] + 1) == m[k]:
                     # print(f"delete item {m[i]} and {m[k]}")
                     m.pop(k)
                     m.pop(i)
-                    m.extend([random.randint(1,18),random.randint(1,18)])
+                    m.extend([random.randint(1,Cons.MOVE_CNT),random.randint(1,Cons.MOVE_CNT)])
                     deleteUselessMovements(m)
 
     def evaluateMoveOrder(_cube, _base_condition, individual):
@@ -190,19 +173,19 @@ def gen_algorithm(cube, base_cube):
         max_s2, max_ind2 = evaluateMoveOrder(cube, base_condition, individual2)
 
         if int(max_s1) > int(max_s2):
-            tail1 = [random.randint(1, 18) for x in range(len(individual1)-max_ind1)]
-            tail2 = [random.randint(1, 18) for x in range(len(individual1)-max_ind1)]
+            tail1 = [random.randint(1, Cons.MOVE_CNT) for x in range(len(individual1)-max_ind1)]
+            tail2 = [random.randint(1, Cons.MOVE_CNT) for x in range(len(individual1)-max_ind1)]
             individual1[:] = individual1[:max_ind1] + tail1
             individual2[:] = individual1[:max_ind1] + tail2
         elif int(max_s1) < int(max_s2):
-            tail1 = [random.randint(1, 18) for x in range(len(individual2) - max_ind2)]
-            tail2 = [random.randint(1, 18) for x in range(len(individual2) - max_ind2)]
+            tail1 = [random.randint(1, Cons.MOVE_CNT) for x in range(len(individual2) - max_ind2)]
+            tail2 = [random.randint(1, Cons.MOVE_CNT) for x in range(len(individual2) - max_ind2)]
             individual1[:] = individual2[:max_ind2] + tail1
             individual2[:] = individual2[:max_ind2] + tail2
         elif int(max_s1) == int(max_s2):
             max_ind = numpy.minimum(max_ind1, max_ind1)
-            tail1 = [random.randint(1, 18) for x in range(len(individual2) - max_ind)]
-            tail2 = [random.randint(1, 18) for x in range(len(individual2) - max_ind)]
+            tail1 = [random.randint(1, Cons.MOVE_CNT) for x in range(len(individual2) - max_ind)]
+            tail2 = [random.randint(1, Cons.MOVE_CNT) for x in range(len(individual2) - max_ind)]
             individual1[:] = individual2[:max_ind] + tail1
             individual2[:] = individual2[:max_ind] + tail2
 
@@ -249,10 +232,11 @@ def gen_algorithm(cube, base_cube):
     # Nevals представляет количество раз, чтобы вызвать функцию оценки в итерации
     best_solution = hof.items[0]
     x, max_ind = evaluateMoveOrder(cube, base_condition, best_solution)
-    print(f"Лучший индивидуум = {best_solution}, s = {x} on index {max_ind}", )
     answer = [x-1 if x % 2 == 0 else x+1 for x in cube.moveOreder[::-1]]
     deleteUselessMovements(answer)
     print(f"Ответ = {answer}", )
+    print(f"Лучший индивидуум = {best_solution[:max_ind+1]}, s = {x} on index {max_ind}", )
+
     for i in range(len(best_solution)):
         if i <= max_ind:
             cube.rotate(best_solution[i], False)
@@ -317,46 +301,34 @@ class RubiksCube(Canvas):
         elif move == 2:  # x1 down and side 0 clockwise
             self.verticalMove(0, False)
             self.rotateSaide(0, True)
-        elif move == 3:  # x2 up
-            self.verticalMove(1, True)
-        elif move == 4:  # x2 down
-            self.verticalMove(1, False)
-        elif move == 5:  # x3 up and side 5 clockwise
+        elif move == 3:  # x3 up and side 5 clockwise
             self.verticalMove(2, True)
             self.rotateSaide(5, True)
-        elif move == 6:  # x3 down and side 5 counterclockwise
+        elif move == 4:  # x3 down and side 5 counterclockwise
             self.verticalMove(2, False)
             self.rotateSaide(5, False)
-        elif move == 7:  # y1 right and side 3 clockwise
+        elif move == 5:  # y1 right and side 3 clockwise
             self.horisontalMove(2, True) #6
             self.rotateSaide(3, True)
-        elif move == 8:  # y1 left and side 3 counterclockwise
+        elif move == 6:  # y1 left and side 3 counterclockwise
             self.horisontalMove(2, False) #6
             self.rotateSaide(3, False)
-        elif move == 9:  # y2 right
-            self.horisontalMove(1, True) #3
-        elif move == 10:  # y2 left
-            self.horisontalMove(1, False) #3
-        elif move == 11:  # y3 right and side 1 counterclockwise
+        elif move == 7:  # y3 right and side 1 counterclockwise
             self.horisontalMove(0, True)
             self.rotateSaide(1, False)
-        elif move == 12:  # y3 left and side 1 clockwise
+        elif move == 8:  # y3 left and side 1 clockwise
             self.horisontalMove(0, False)
             self.rotateSaide(1, True)
-        elif move == 13:  # z1 up and side 2 clockwise
+        elif move == 9:  # z1 up and side 2 clockwise
             self.z_verticalMove(0, True)
             self.rotateSaide(2, True)
-        elif move == 14:  # z1 down and side 2 counterclockwise
+        elif move == 10:  # z1 down and side 2 counterclockwise
             self.z_verticalMove(0, False)
             self.rotateSaide(2, False)
-        elif move == 15:  # z2 up
-            self.z_verticalMove(1, True)
-        elif move == 16:  # z2 down
-            self.z_verticalMove(1, False)
-        elif move == 17:  # z3 up and side 4 counterclockwise
+        elif move == 11:  # z3 up and side 4 counterclockwise
             self.z_verticalMove(2, True)
             self.rotateSaide(4, False)
-        elif move == 18:  # z3 down and side 4 clockwise
+        elif move == 12:  # z3 down and side 4 clockwise
             self.z_verticalMove(2, False)
             self.rotateSaide(4, True)
         if saveMoveOrder:
