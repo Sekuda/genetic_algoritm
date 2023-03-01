@@ -20,10 +20,10 @@ class Cons:
     DOT_SIZE = 10
     EFFECTIVE_LEN = 27
     INDIVIDUAL_LEN = 37
-    POPULATION_SIZE = 1000
+    POPULATION_SIZE = 300
     P_CROSSOVER = 0.9
     P_MUTATION = 0.6
-    MAX_GENERATIONS = 1000
+    MAX_GENERATIONS = 100
     HOF_LEN = 10
     ROTATE_LEN = 10
 
@@ -261,12 +261,14 @@ class RubiksCube(Canvas):
         self.initCube()
         self.pack(anchor=N)
 
+
     def initCube(self):
         self.moveOreder = []
         self.margin = 20
         self.edgeLen = 20
         self.colors = ['blue', 'yellow', 'red', 'white', 'orange', 'green']
-        self.base_matrix = [[y + x * 9 for y in range(0, 9)] for x in range(6)]
+        self.initStep1()
+        self.initStep2()
         self.matrix = [[y + x * 9 for y in range(0, 9)] for x in range(6)]
         # двумерный [лево, верх, фронт, низ, спина, право]
         self.colors = [self.colors[x // 9] for x in range(54)]
@@ -386,15 +388,51 @@ class RubiksCube(Canvas):
         return s * 100 / 54
 
     def getCubeArea(self):
-        counter = 0 #54 in total
-        for i in range(len(self.base_matrix)):
-            for k in range(len(self.base_matrix[i])):
-                if self.matrix[i][k] == self.base_matrix[i][k]:
-                    counter += 1
-        return counter * 100 / 54
+        counter = 0
+        total_cnt = 0 #54 in total
+        for i in range(len(self.step1)):
+            for k in range(len(self.step1[i])):
+                if self.step1[i][k] > 0:
+                    total_cnt += 1
+                    if self.matrix[i][k] == self.step1[i][k]:
+                        counter += 1
+
+        step1 = counter * 100 / total_cnt
+
+        if step1 == 100:
+            counter = 0
+            total_cnt = 0  # 54 in total
+            for i in range(len(self.step2)):
+                for k in range(len(self.step2[i])):
+                    if self.step2[i][k] > 0:
+                        total_cnt += 1
+                        if self.matrix[i][k] == self.step2[i][k]:
+                            counter += 1
+
+            step2 = counter * 100 / total_cnt
+            return step2
+        else:
+            return step1 / 2
 
     def reset(self):
         self.initCube()
+
+    def initStep1(self):
+        self.step1 = [[y + x * 9 for y in range(0, 9)] for x in range(6)]
+        for i in range(len(self.step1)):
+            if i != 2:
+                self.step1[i] = numpy.zeros(9)
+            else:
+                self.step1[i][0] = 0
+                self.step1[i][2] = 0
+                self.step1[i][6] = 0
+                self.step1[i][8] = 0
+    def initStep2(self):
+        self.step1 = [[y + x * 9 for y in range(0, 9)] for x in range(6)]
+        for i in range(len(self.step1)):
+            if i != 2:
+                self.step1[i] = numpy.zeros(9)
+
 
 def main():
     root = Tk()
